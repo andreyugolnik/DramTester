@@ -61,23 +61,13 @@ static const TestProp TestsList[] = {
     { TestProp::Type::Random, 0 },
 };
 
-static uint32_t CurrentTestIndex = 0;
-
-static cLedsList LedsList;
-
-static cTestPlain TestPlain(Verbose, AddressBits);
-static cTestReversed TestReversed(Verbose, AddressBits);
-static cTestRandom TestRandom(Verbose, AddressBits);
-
-static cButton BtnStart(BTN_START);
-
 // -----------------------------------------------------------------------------
 
-static void breakWithoutErrors()
+static void breakWithoutErrors(const cLedsList& ledsList)
 {
     CurrentState = State::Idle;
 
-    LedsList.showGreen();
+    ledsList.showGreen();
 
     Serial.println("");
     Serial.println("--------------------------------------------------------");
@@ -91,7 +81,7 @@ static void breakWithoutErrors()
     Serial.flush();
 }
 
-static bool breakOnError(const cTest::Result& testResult)
+static bool breakOnError(const cTest::Result& testResult, const cLedsList& ledsList)
 {
     const bool hasErrors = testResult == true;
 
@@ -99,7 +89,7 @@ static bool breakOnError(const cTest::Result& testResult)
     {
         CurrentState = State::Idle;
 
-        LedsList.showRed();
+        ledsList.showRed();
 
         Serial.println("FAILED at row "
                        + String(testResult.row)
@@ -127,8 +117,10 @@ static bool breakOnError(const cTest::Result& testResult)
 
 // -----------------------------------------------------------------------------
 
-void setup()
+int main()
 {
+    init();
+
     Serial.begin(9600);
     while (!Serial)
     {
@@ -158,10 +150,12 @@ void setup()
     DDRB = 0x3f; // PB0..PB5 0b00111111
     DDRC = 0x07; // PC0..PC2 0b00000111
 
-    LedsList.setup();
-    LedsList.switchOff();
+    cLedsList ledsList;
+    ledsList.setup();
+    ledsList.switchOff();
 
-    BtnStart.setup();
+    cButton btnStart(BTN_START);
+    btnStart.setup();
 
     pinMode(DOUT, INPUT);
     pinMode(DIN, OUTPUT);
@@ -173,56 +167,64 @@ void setup()
     digitalWrite(CAS, HIGH);
     digitalWrite(RAS, HIGH);
     digitalWrite(WRITE, HIGH);
-}
 
-void loop()
-{
-    if (CurrentState == State::Testing)
+    cTestPlain testPlain(Verbose, AddressBits);
+    cTestReversed testReversed(Verbose, AddressBits);
+    cTestRandom testRandom(Verbose, AddressBits);
+
+    uint32_t CurrentTestIndex = 0;
+
+    while (true)
     {
-        bool hasErrors = false;
-
-        const TestProp& prop = TestsList[CurrentTestIndex];
-        switch (prop.type)
+        if (CurrentState == State::Testing)
         {
-        case TestProp::Type::Plain:
-            hasErrors = breakOnError(TestPlain.doTest(prop.value, LedsList));
-            break;
+            bool hasErrors = false;
 
-        case TestProp::Type::Reversed:
-            hasErrors = breakOnError(TestReversed.doTest(prop.value, LedsList));
-            break;
-
-        case TestProp::Type::Random:
-            hasErrors = breakOnError(TestRandom.doTest(millis(), LedsList));
-            break;
-        }
-
-        if (hasErrors == false)
-        {
-            CurrentTestIndex++;
-
-            const uint32_t totalTests = sizeof(TestsList) / sizeof(TestsList[0]);
-            Serial.println(String(100.0f * CurrentTestIndex / totalTests) + "%");
-
-            if (CurrentTestIndex == totalTests)
+            const TestProp& prop = TestsList[CurrentTestIndex];
+            switch (prop.type)
             {
-                breakWithoutErrors();
+            case TestProp::Type::Plain:
+                hasErrors = breakOnError(testPlain.doTest(prop.value, ledsList), ledsList);
+                break;
+
+            case TestProp::Type::Reversed:
+                hasErrors = breakOnError(testReversed.doTest(prop.value, ledsList), ledsList);
+                break;
+
+            case TestProp::Type::Random:
+                hasErrors = breakOnError(testRandom.doTest(millis(), ledsList), ledsList);
+                break;
+            }
+
+            if (hasErrors == false)
+            {
+                CurrentTestIndex++;
+
+                const uint32_t totalTests = sizeof(TestsList) / sizeof(TestsList[0]);
+                Serial.println(String(100.0f * CurrentTestIndex / totalTests) + "%");
+
+                if (CurrentTestIndex == totalTests)
+                {
+                    breakWithoutErrors(ledsList);
+                }
             }
         }
-    }
-    else
-    {
-        if (BtnStart.update())
+        else
         {
-            if (CurrentState == State::Idle)
+            if (btnStart.update())
             {
-                CurrentState = State::Testing;
-                CurrentTestIndex = 0;
-                LedsList.showIdle();
+                if (CurrentState == State::Idle)
+                {
+                    CurrentState = State::Testing;
+                    CurrentTestIndex = 0;
+                    ledsList.showIdle();
+                }
             }
-        }
 
-        LedsList.update();
-        delay(10);
+            ledsList.update();
+            delay(10);
+        }
     }
+
+    return 0;
 }
