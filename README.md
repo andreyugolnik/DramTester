@@ -39,3 +39,7 @@ By default it supports 4164.
 | LED Green    | A4 (PC4)     |
 | LED Red      | A5 (PC5)     |
 | Start Btn    | A5 (PC5)     |
+
+## How to use arduino-cli
+
+Arduino [command line interface](https://create.arduino.cc/projecthub/B45i/getting-started-with-arduino-cli-7652a5).
