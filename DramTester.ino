@@ -6,12 +6,12 @@
 *
 \**********************************************/
 
-#include "Button.h"
-#include "Led.h"
-#include "PinsConfig.h"
-#include "TestPlain.h"
-#include "TestRandom.h"
-#include "TestReversed.h"
+#include "src/Button.h"
+#include "src/Led.h"
+#include "src/PinsConfig.h"
+#include "src/TestPlain.h"
+#include "src/TestRandom.h"
+#include "src/TestReversed.h"
 
 // -----------------------------------------------------------------------------
 
