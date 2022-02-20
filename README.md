@@ -1,8 +1,6 @@
 # DramTester
-Simple Arduino DRAM tester. It supports up to 9 address lines. By default it supports 4164.
-
-### DRAM 4164 / 41256 pinout
-![DRAM 4164 / 41256 pinout](docs/dram_4164_41256.png)
+Simple Arduino DRAM tester. It supports up to 9 address lines.
+By default it supports 4164.
 
 ## Read / Write cycles
 
@@ -13,6 +11,10 @@ Simple Arduino DRAM tester. It supports up to 9 address lines. By default it sup
 ![Write Cycle](docs/write_cycle.png)
 
 ## Arduino Nano connections
+
+### DRAM 4164 / 41256 pinout
+![DRAM 4164 / 41256 pinout](docs/dram_4164_41256.png)
+
 ### 4164 / 41256
 | 4164 / 41256 | Arduino Nano |
 |--------------|--------------|
