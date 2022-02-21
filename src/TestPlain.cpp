@@ -15,71 +15,43 @@ cTestPlain::cTestPlain(bool verbose, uint32_t addressBits)
 {
 }
 
-cTestPlain::Result cTestPlain::writeCycle(uint32_t val, const cLedsList& leds) const
+cTest::Result cTestPlain::doTestImpl(uint32_t val, const cLedsList& leds, Error& error) const
 {
-    Serial.print("Setting all bits set to: ");
-    Serial.println(val);
-    Serial.println("--------------------------------------------------------");
+    Serial.println("| All bits set to: " + String(val));
     Serial.flush();
 
-    digitalWrite(DIN, val);
+    val %= 2; // just clamp value to 0..1
 
     for (uint32_t col = 0; col < (1 << m_addressBits); col++)
     {
         const bool enabled = m_verbose && col % m_addressBits == 0;
 
+        digitalWrite(DIN, val);
         for (uint32_t row = 0; row < (1 << m_addressBits); row++)
         {
-            setAddress(row, col);
+            writeToAddress(row, col);
 
             leds.update();
+        }
 
-            if (enabled && row % m_addressBits == 0)
+        digitalWrite(DIN, !val);
+        for (uint32_t row = 0; row < (1 << m_addressBits); row++)
+        {
+            if (readFromAddress(row, col) != val)
             {
-                Serial.print(".");
-                Serial.flush();
+                setError(row, col, val, error);
+                return Result::Error;
             }
+
+            leds.update();
         }
 
         if (enabled)
         {
-            Serial.println("");
+            Serial.print(".");
+            Serial.flush();
         }
     }
 
-    return returnOK();
-}
-
-cTestPlain::Result cTestPlain::readCycle(uint32_t val, const cLedsList& leds) const
-{
-    // Reverse DIN in case DOUT is floating
-    digitalWrite(DIN, !val);
-
-    for (uint32_t col = 0; col < (1 << m_addressBits); col++)
-    {
-        const bool enabled = m_verbose && col % m_addressBits == 0;
-
-        for (uint32_t row = 0; row < (1 << m_addressBits); row++)
-        {
-            if (getAddress(row, col) != val)
-            {
-                return returnError(row, col, val);
-            }
-
-            leds.update();
-
-            if (enabled && row % m_addressBits == 0)
-            {
-                Serial.print(".");
-                Serial.flush();
-            }
-        }
-
-        if (enabled)
-        {
-            Serial.println("");
-        }
-    }
-
-    return returnOK();
+    return Result::OK;
 }

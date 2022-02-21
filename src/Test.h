@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include "PinsConfig.h"
 
 class cLedsList;
 
@@ -17,39 +18,47 @@ class cTest
 public:
     virtual ~cTest() = default;
 
-    struct Result
+    enum class Result
     {
-        bool hasError;
-        uint32_t row;
-        uint32_t col;
-        uint32_t val;
-
-        operator bool() const
-        {
-            return hasError;
-        }
+        OK,
+        Error
     };
 
     Result doTest(uint32_t value, const cLedsList& leds) const;
 
 protected:
-    Result returnOK() const;
-    Result returnError(uint32_t row, uint32_t col, uint32_t val) const;
-
-    void printElapsedTime(const String& prefix, uint32_t elapsed) const;
-
-    void setAddress(uint32_t row, uint32_t col) const;
-    uint32_t getAddress(uint32_t row, uint32_t col) const;
-
-    void setRAS(uint32_t row) const;
-    void setCAS(uint32_t col) const;
-
-protected:
     cTest(bool verbose, uint32_t addressBits);
 
+protected:
+    struct Error
+    {
+        uint32_t row;
+        uint32_t col;
+        uint32_t val;
+    };
+
+    void setError(uint32_t row, uint32_t col, uint32_t val, Error& error) const;
+
+    void writeToAddress(uint32_t row, uint32_t col) const;
+    uint32_t readFromAddress(uint32_t row, uint32_t col) const;
+
 private:
-    virtual Result writeCycle(uint32_t value, const cLedsList& leds) const = 0;
-    virtual Result readCycle(uint32_t value, const cLedsList& leds) const = 0;
+    void setRAS(uint32_t row) const
+    {
+        PORTB = row & 0x3f;
+        PORTC = (PORTC & 0xf0) | ((row >> 6) & 0x0f);
+        digitalWrite(RAS, LOW);
+    }
+
+    void setCAS(uint32_t col) const
+    {
+        PORTB = col & 0x3f;
+        PORTC = (PORTC & 0xf0) | ((col >> 6) & 0x0f);
+        digitalWrite(CAS, LOW);
+    }
+
+private:
+    virtual Result doTestImpl(uint32_t value, const cLedsList& leds, Error& error) const = 0;
 
 protected:
     const bool m_verbose;

@@ -16,6 +16,5 @@ public:
     cTestReversed(bool verbose, uint32_t addressBits);
 
 private:
-    Result writeCycle(uint32_t val, const cLedsList& leds) const override;
-    Result readCycle(uint32_t val, const cLedsList& leds) const override;
+    Result doTestImpl(uint32_t val, const cLedsList& leds, Error& error) const override;
 };

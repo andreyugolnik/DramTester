@@ -49,8 +49,8 @@ struct TestProp
 
 static const TestProp TestsList[] = {
     { TestProp::Type::Plain, 0 },
-    { TestProp::Type::Plain, 1 },
     { TestProp::Type::Reversed, 1 },
+    { TestProp::Type::Plain, 1 },
     { TestProp::Type::Reversed, 0 },
     { TestProp::Type::Random, 0 },
     { TestProp::Type::Random, 0 },
@@ -64,56 +64,37 @@ static const TestProp TestsList[] = {
 
 // -----------------------------------------------------------------------------
 
-static void breakWithoutErrors(const cLedsList& ledsList)
+static void readyToTestChipMessage()
 {
-    CurrentState = State::Idle;
-
-    ledsList.showGreen();
-
     Serial.println("");
-    Serial.println("--------------------------------------------------------");
-    Serial.println("All tests is done.");
-    Serial.println("DRAM is OK!");
-    Serial.println("--------------------------------------------------------");
-    Serial.println("");
-    Serial.println("Insert another chip and press Start button");
-    Serial.println("");
+    Serial.println("o======================================================o");
+    Serial.println("|          Insert DRAM and press Start button          |");
+    Serial.println("o======================================================o");
     Serial.println("");
     Serial.flush();
 }
 
-static bool breakOnError(const cTest::Result& testResult, const cLedsList& ledsList)
+static void showGoodRamMessage()
 {
-    const bool hasErrors = testResult == true;
+    Serial.println("");
+    Serial.println("              o=========================o");
+    Serial.println("              |                         |");
+    Serial.println("              |    All tests is done    |");
+    Serial.println("              |       DRAM is OK!       |");
+    Serial.println("              |                         |");
+    Serial.println("              o=========================o");
+    readyToTestChipMessage();
+}
 
-    if (hasErrors)
-    {
-        CurrentState = State::Idle;
-
-        ledsList.showRed();
-
-        Serial.println("FAILED at row "
-                       + String(testResult.row)
-                       + ", col "
-                       + String(testResult.col)
-                       + ", was expecting "
-                       + String(testResult.val)
-                       + " got "
-                       + String(!testResult.val)
-                       + ".");
-        Serial.println("--------------------------------------------------------");
-        Serial.println("");
-        Serial.println("--------------------------------------------------------");
-        Serial.println("DRAM has BAD cells!");
-        Serial.println("--------------------------------------------------------");
-        Serial.println("");
-        Serial.println("Insert another chip and press Start button");
-        Serial.println("");
-        Serial.println("");
-        Serial.flush();
-    }
-
-    return hasErrors;
+static void showBadRamMessage()
+{
+    Serial.println("");
+    Serial.println("              o===========================o");
+    Serial.println("              |                           |");
+    Serial.println("              |    DRAM has BAD cells!    |");
+    Serial.println("              |                           |");
+    Serial.println("              o===========================o");
+    readyToTestChipMessage();
 }
 
 // -----------------------------------------------------------------------------
@@ -140,10 +121,7 @@ int main()
     Serial.println("Testing DRAM " + String(chipType)
                    + " with " + String(AddressBits)
                    + " address line bits");
-    Serial.println("");
-    Serial.println("Insert chip and press Start button");
-    Serial.println("");
-    Serial.flush();
+    readyToTestChipMessage();
 
     // randomSeed(analogRead(LED_G));
 
@@ -179,35 +157,43 @@ int main()
     {
         if (CurrentState == State::Testing)
         {
-            bool hasErrors = false;
+            cTest::Result result = cTest::Result::OK;
 
             const TestProp& prop = TestsList[CurrentTestIndex];
             switch (prop.type)
             {
             case TestProp::Type::Plain:
-                hasErrors = breakOnError(testPlain.doTest(prop.value, ledsList), ledsList);
+                result = testPlain.doTest(prop.value, ledsList);
                 break;
 
             case TestProp::Type::Reversed:
-                hasErrors = breakOnError(testReversed.doTest(prop.value, ledsList), ledsList);
+                result = testReversed.doTest(prop.value, ledsList);
                 break;
 
             case TestProp::Type::Random:
-                hasErrors = breakOnError(testRandom.doTest(millis(), ledsList), ledsList);
+                result = testRandom.doTest(millis(), ledsList);
                 break;
             }
 
-            if (hasErrors == false)
+            if (result == cTest::Result::OK)
             {
                 CurrentTestIndex++;
 
                 const uint32_t totalTests = sizeof(TestsList) / sizeof(TestsList[0]);
-                Serial.println(String(100.0f * CurrentTestIndex / totalTests) + "%");
+                Serial.println("  => " + String(100.0f * CurrentTestIndex / totalTests, 1) + "%");
 
                 if (CurrentTestIndex == totalTests)
                 {
-                    breakWithoutErrors(ledsList);
+                    CurrentState = State::Idle;
+                    ledsList.showGreen();
+                    showGoodRamMessage();
                 }
+            }
+            else
+            {
+                CurrentState = State::Idle;
+                ledsList.showRed();
+                showBadRamMessage();
             }
         }
         else

@@ -15,11 +15,9 @@ cTestReversed::cTestReversed(bool verbose, uint32_t addressBits)
 {
 }
 
-cTestReversed::Result cTestReversed::writeCycle(uint32_t val, const cLedsList& leds) const
+cTest::Result cTestReversed::doTestImpl(uint32_t value, const cLedsList& leds, Error& error) const
 {
-    Serial.print("Reversing bits starting with: ");
-    Serial.println(val);
-    Serial.println("--------------------------------------------------------");
+    Serial.println("| Reversing bits starting with: " + String(value));
     Serial.flush();
 
     for (uint32_t col = 0; col < (1 << m_addressBits); col++)
@@ -28,55 +26,33 @@ cTestReversed::Result cTestReversed::writeCycle(uint32_t val, const cLedsList& l
 
         for (uint32_t row = 0; row < (1 << m_addressBits); row++)
         {
+            const uint32_t val = (value + row) % 2;
+
             digitalWrite(DIN, val);
-            val = !val;
-            setAddress(row, col);
+            writeToAddress(row, col);
 
             leds.update();
-
-            if (enabled && row % m_addressBits == 0)
-            {
-                Serial.print(".");
-            }
         }
-
-        if (enabled)
-        {
-            Serial.println("");
-        }
-    }
-
-    return returnOK();
-}
-
-cTestReversed::Result cTestReversed::readCycle(uint32_t val, const cLedsList& leds) const
-{
-    for (uint32_t col = 0; col < (1 << m_addressBits); col++)
-    {
-        const bool enabled = m_verbose && col % m_addressBits == 0;
 
         for (uint32_t row = 0; row < (1 << m_addressBits); row++)
         {
-            if (getAddress(row, col) != val)
-            {
-                return returnError(row, col, val);
-            }
+            const uint32_t val = (value + row) % 2;
 
-            val = !val;
+            if (readFromAddress(row, col) != val)
+            {
+                setError(row, col, val, error);
+                return Result::Error;
+            }
 
             leds.update();
-
-            if (enabled && row % m_addressBits == 0)
-            {
-                Serial.print(".");
-            }
         }
 
         if (enabled)
         {
-            Serial.println("");
+            Serial.print(".");
+            Serial.flush();
         }
     }
 
-    return returnOK();
+    return Result::OK;
 }
