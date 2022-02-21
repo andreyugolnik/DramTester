@@ -8,34 +8,16 @@
 
 #pragma once
 
+#include <Arduino.h>
+
 class cButton final
 {
 public:
-    cButton(uint32_t btn)
-        : m_btn(btn)
-    {
-    }
+    cButton(uint32_t btn);
 
-    void setup()
-    {
-        pinMode(m_btn, INPUT_PULLUP);
-    }
+    void setup();
 
-    bool update()
-    {
-        const uint32_t timeout = 300;
-        const uint32_t currentTime = millis();
-        if (m_lastTime + timeout <= currentTime)
-        {
-            if (digitalRead(m_btn) == LOW)
-            {
-                m_lastTime = currentTime;
-                return true;
-            }
-        }
-
-        return false;
-    }
+    bool update();
 
 private:
     const uint32_t m_btn;

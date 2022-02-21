@@ -14,40 +14,14 @@
 class cLedsList final
 {
 public:
-    void setup()
-    {
-        m_green.setup(300, true);
-        m_red.setup(300, false);
-    }
+    void setup();
 
-    void update()
-    {
-        m_green.update();
-        m_red.update();
-    }
+    void update();
 
-    void switchOff()
-    {
-        m_green.setState(false);
-        m_red.setState(false);
-    }
-
-    void showIdle()
-    {
-        setup();
-    }
-
-    void showRed()
-    {
-        m_green.setState(false);
-        m_red.setTimeout(150);
-    }
-
-    void showGreen()
-    {
-        m_red.setState(false);
-        m_green.setTimeout(150);
-    }
+    void switchOff();
+    void showIdle();
+    void showRed();
+    void showGreen();
 
 private:
     cLed m_green{ LED_G, 300, true };

@@ -8,6 +8,7 @@
 
 #include "src/Button.h"
 #include "src/Led.h"
+#include "src/LedsList.h"
 #include "src/PinsConfig.h"
 #include "src/TestPlain.h"
 #include "src/TestRandom.h"
@@ -157,7 +158,7 @@ int main()
     cButton btnStart(BTN_START);
     btnStart.setup();
 
-    pinMode(DOUT, INPUT);
+    pinMode(DOUT, INPUT_PULLUP);
     pinMode(DIN, OUTPUT);
 
     pinMode(CAS, OUTPUT);
