@@ -31,7 +31,7 @@ cTest::Result cTestReversed::doTestImpl(uint32_t value, const cLedsList& leds, E
             digitalWrite(DIN, val);
             writeToAddress(row, col);
 
-            leds.update();
+            // leds.update();
         }
 
         for (uint32_t row = 0; row < (1 << m_addressBits); row++)
@@ -44,7 +44,7 @@ cTest::Result cTestReversed::doTestImpl(uint32_t value, const cLedsList& leds, E
                 return Result::Error;
             }
 
-            leds.update();
+            // leds.update();
         }
 
         if (enabled)

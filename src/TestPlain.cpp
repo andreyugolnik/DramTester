@@ -31,7 +31,7 @@ cTest::Result cTestPlain::doTestImpl(uint32_t val, const cLedsList& leds, Error&
         {
             writeToAddress(row, col);
 
-            leds.update();
+            // leds.update();
         }
 
         digitalWrite(DIN, !val);
@@ -43,7 +43,7 @@ cTest::Result cTestPlain::doTestImpl(uint32_t val, const cLedsList& leds, Error&
                 return Result::Error;
             }
 
-            leds.update();
+            // leds.Lupdate();
         }
 
         if (enabled)

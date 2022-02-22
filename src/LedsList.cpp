@@ -7,11 +7,32 @@
 \**********************************************/
 
 #include "LedsList.h"
+#include "IsrHandler.h"
+
+cLedsList::~cLedsList()
+{
+    clear();
+}
 
 void cLedsList::setup()
 {
     m_green.setup(300, true);
     m_red.setup(300, false);
+
+    clear();
+
+    m_hadlerId = cIsrHandler::getInstance()->addHandler([](void* user) {
+        static_cast<cLedsList*>(user)->update();
+    }, this);
+}
+
+void cLedsList::clear()
+{
+    if (m_hadlerId != 0)
+    {
+        cIsrHandler::getInstance()->removeHandler(m_hadlerId);
+        m_hadlerId = 0;
+    }
 }
 
 void cLedsList::update()

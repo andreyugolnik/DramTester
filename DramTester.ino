@@ -208,7 +208,7 @@ int main()
                 }
             }
 
-            ledsList.update();
+            // ledsList.update();
             delay(10);
         }
     }

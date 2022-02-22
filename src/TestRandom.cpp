@@ -31,7 +31,7 @@ cTest::Result cTestRandom::doTestImpl(uint32_t seed, const cLedsList& leds, Erro
             digitalWrite(DIN, val);
             writeToAddress(row, col);
 
-            leds.update();
+            // leds.update();
         }
 
         randomSeed(seed + col);
@@ -44,7 +44,7 @@ cTest::Result cTestRandom::doTestImpl(uint32_t seed, const cLedsList& leds, Erro
                 return Result::Error;
             }
 
-            leds.update();
+            // leds.update();
         }
 
         if (enabled)
