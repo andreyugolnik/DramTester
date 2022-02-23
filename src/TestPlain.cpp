@@ -7,43 +7,41 @@
 \**********************************************/
 
 #include "TestPlain.h"
+#include "Dram.h"
 #include "LedsList.h"
 #include "PinsConfig.h"
 
-cTestPlain::cTestPlain(bool verbose, uint32_t addressBits)
-    : cTest(verbose, addressBits)
+cTestPlain::cTestPlain(bool verbose)
+    : cTest(verbose)
 {
 }
 
-cTest::Result cTestPlain::doTestImpl(uint32_t val, const cLedsList& leds, Error& error) const
+cTest::Result cTestPlain::doTestImpl(uint32_t val, const cDram& dram, const cLedsList& leds, Error& error) const
 {
     Serial.println("| All bits set to: " + String(val));
     Serial.flush();
 
     val %= 2; // just clamp value to 0..1
 
-    for (uint32_t col = 0; col < (1 << m_addressBits); col++)
+    const uint16_t addressBits = dram.getAddressBits();
+    const uint16_t size = 1 << addressBits;
+
+    for (uint16_t col = 0; col < size; col++)
     {
-        const bool enabled = m_verbose && col % m_addressBits == 0;
+        const bool enabled = m_verbose && col % addressBits == 0;
 
-        digitalWrite(DIN, val);
-        for (uint32_t row = 0; row < (1 << m_addressBits); row++)
+        for (uint16_t row = 0; row < size; row++)
         {
-            writeToAddress(row, col);
-
-            // leds.update();
+            dram.writeToAddress(row, col, val);
         }
 
-        digitalWrite(DIN, !val);
-        for (uint32_t row = 0; row < (1 << m_addressBits); row++)
+        for (uint16_t row = 0; row < size; row++)
         {
-            if (readFromAddress(row, col) != val)
+            if (dram.readFromAddress(row, col) != val)
             {
                 setError(row, col, val, error);
                 return Result::Error;
             }
-
-            // leds.Lupdate();
         }
 
         if (enabled)

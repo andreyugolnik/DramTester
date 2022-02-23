@@ -11,10 +11,6 @@
 cButton::cButton(uint32_t btn)
     : m_btn(btn)
 {
-}
-
-void cButton::setup()
-{
     pinMode(m_btn, INPUT_PULLUP);
 }
 

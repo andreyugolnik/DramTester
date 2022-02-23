@@ -9,14 +9,16 @@
 #pragma once
 
 #include "Led.h"
-#include "PinsConfig.h"
+
+// (PC4) LED green
+// (PC5) LED red
 
 class cLedsList final
 {
 public:
+    cLedsList();
     ~cLedsList();
 
-    void setup();
     void clear();
 
     void update();
@@ -28,6 +30,6 @@ public:
 
 private:
     uint32_t m_hadlerId = 0;
-    cLed m_green{ LED_G, 300, true };
-    cLed m_red{ LED_R, 300, false };
+    cLed m_green{ cLed::Port::C, 4, 300, true };
+    cLed m_red{ cLed::Port::C, 5, 300, false };
 };

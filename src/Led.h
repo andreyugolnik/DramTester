@@ -13,7 +13,14 @@
 class cLed final
 {
 public:
-    cLed(uint32_t led, uint32_t timeout, bool initialState);
+    enum class Port
+    {
+        B,
+        C,
+        D
+    };
+
+    cLed(Port port, uint8_t bit, uint32_t timeout, bool initialState);
 
     void setup(uint32_t timeout, bool initialState);
 
@@ -24,7 +31,12 @@ public:
     void update();
 
 private:
-    const uint32_t m_led;
+    void led(bool on) const;
+    void ledOff() const;
+
+private:
+    const Port m_port;
+    const uint8_t m_led;
     uint32_t m_timeout;
     bool m_state;
 

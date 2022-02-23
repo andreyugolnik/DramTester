@@ -15,30 +15,31 @@ By default it supports 4164.
 ### DRAM 4164 / 41256 pinout
 ![DRAM 4164 / 41256 pinout](docs/dram_4164_41256.png)
 
-### 4164 / 41256
-| 4164 / 41256 | Arduino Nano |
-|--------------|--------------|
-| Din          | D2 (PD2)     |
-| Dout         | D3 (PD3)     |
-| CAS          | D4 (PD4)     |
-| RAS          | D5 (PD5)     |
-| Write        | D6 (PD6)     |
-| A0           | D8 (PB0)     |
-| A1           | D9 (PB1)     |
-| A2           | D10 (PB2)    |
-| A3           | D11 (PB3)    |
-| A4           | D12 (PB4)    |
-| A5           | D13 (PB5)    |
-| A6           | A0 (PC0)     |
-| A7           | A1 (PC1)     |
-| A8 (41256)   | A2 (PC2)     |
+### DRAM 4164 / 41256 pinouts
+                 -------------------
+     (PB0)  5 --| A0  |       |     |
+     (PB1)  7 --| A1  | 4164/ |     |
+     (PB2)  6 --| A2  | 41256 |     |
+     (PB3) 12 --| A3  |       |     |
+     (PB4) 11 --| A4  |       |  DO |-- 14 (PD3)
+     (PB5) 10 --| A5  |       |     |
+     (PC0) 13 --| A6  |       |     |
+     (PC1)  9 --| A7  |       |     |
+     (PC2)  1 --| A8* |       |     |
+                |-----|       |-----|
+     (PD2)  2 --| DI  |       |     |
+                |-----|       |     |
+     (PD5)  4 --o RAS |       | +5V |-- 8 (PC3)
+     (PD4) 15 --o CAS |       |     |
+     (PD6)  3 --o WE  |       | GND |-- 16
+                 -------------------
 
 ### Other
 | Other        | Arduino Nano |
 |--------------|--------------|
-| LED Green    | A4 (PC4)     |
-| LED Red      | A5 (PC5)     |
-| Start Btn    | A5 (PC5)     |
+| LED Green    | (PC4)        |
+| LED Red      | (PC5)        |
+| Start Btn    | (PC5)        |
 
 ## How to use arduino-cli
 

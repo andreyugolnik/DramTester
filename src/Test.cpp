@@ -8,22 +8,24 @@
 
 #include "Test.h"
 #include "LedsList.h"
+#include "Dram.h"
 #include "Timer.h"
 
-cTest::cTest(bool verbose, uint32_t addressBits)
+cTest::cTest(bool verbose)
     : m_verbose(verbose)
-    , m_addressBits(addressBits)
 {
 }
 
-cTest::Result cTest::doTest(uint32_t value, const cLedsList& leds) const
+cTest::Result cTest::doTest(uint32_t value, const cDram& dram, const cLedsList& leds) const
 {
     Serial.println("o------------------------------------------------------o");
+
+    dram.setPowerOn();
 
     cTimer timer;
 
     Error error;
-    const Result result = doTestImpl(value, leds, error);
+    const Result result = doTestImpl(value, dram, leds, error);
 
     if (result == Result::OK)
     {
@@ -38,6 +40,8 @@ cTest::Result cTest::doTest(uint32_t value, const cLedsList& leds) const
                        + ".");
     }
 
+    dram.setPowerOff();
+
     Serial.println("o------------------------------------------------------o");
     Serial.flush();
 
@@ -47,28 +51,4 @@ cTest::Result cTest::doTest(uint32_t value, const cLedsList& leds) const
 void cTest::setError(uint32_t row, uint32_t col, uint32_t val, Error& error) const
 {
     error = { row, col, val };
-}
-
-void cTest::writeToAddress(uint32_t row, uint32_t col) const
-{
-    setRAS(row);
-    digitalWrite(WRITE, LOW);
-    setCAS(col);
-
-    digitalWrite(CAS, HIGH);
-    digitalWrite(RAS, HIGH);
-}
-
-uint32_t cTest::readFromAddress(uint32_t row, uint32_t col) const
-{
-    setRAS(row);
-    digitalWrite(WRITE, HIGH);
-    setCAS(col);
-
-    const uint32_t val = digitalRead(DOUT);
-
-    digitalWrite(CAS, HIGH);
-    digitalWrite(RAS, HIGH);
-
-    return val;
 }

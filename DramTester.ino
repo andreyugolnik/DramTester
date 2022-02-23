@@ -7,6 +7,7 @@
 \**********************************************/
 
 #include "src/Button.h"
+#include "src/Dram.h"
 #include "src/Led.h"
 #include "src/LedsList.h"
 #include "src/PinsConfig.h"
@@ -15,12 +16,6 @@
 #include "src/TestReversed.h"
 
 // -----------------------------------------------------------------------------
-
-// PB0..PB5 + PC0..PC2 is used to connect to the address line A0..A8 of the RAM
-// Up to 9 bits for address line
-// 8 bits for 4164
-// 9 bits for 41256
-uint32_t AddressBits = 8;
 
 const bool Verbose = false;
 
@@ -106,50 +101,33 @@ int main()
     Serial.begin(9600);
     while (!Serial)
     {
-        delay(100);
+        _delay_us(100);
     }
 
     Serial.println("DRAM Tester v0.2 / Feb 20, 2022");
     Serial.println("by Andrey A. Ugolnik");
     Serial.println("");
 
+    cDram dram;
+
     const char* chipType = "64Kx1";
-    if (AddressBits == 9)
+    if (dram.getAddressBits() == 9)
     {
         chipType = "256Kx1";
     }
     Serial.println("Testing DRAM " + String(chipType)
-                   + " with " + String(AddressBits)
+                   + " with " + String(dram.getAddressBits())
                    + " address line bits");
     readyToTestChipMessage();
 
-    // randomSeed(analogRead(LED_G));
-
-    // reserve 9 bits for address line
-    DDRB = 0x3f; // PB0..PB5 0b00111111
-    DDRC = 0x07; // PC0..PC2 0b00000111
-
     cLedsList ledsList;
-    ledsList.setup();
     ledsList.switchOff();
 
     cButton btnStart(BTN_START);
-    btnStart.setup();
 
-    pinMode(DOUT, INPUT_PULLUP);
-    pinMode(DIN, OUTPUT);
-
-    pinMode(CAS, OUTPUT);
-    pinMode(RAS, OUTPUT);
-    pinMode(WRITE, OUTPUT);
-
-    digitalWrite(CAS, HIGH);
-    digitalWrite(RAS, HIGH);
-    digitalWrite(WRITE, HIGH);
-
-    cTestPlain testPlain(Verbose, AddressBits);
-    cTestReversed testReversed(Verbose, AddressBits);
-    cTestRandom testRandom(Verbose, AddressBits);
+    cTestPlain testPlain(Verbose);
+    cTestReversed testReversed(Verbose);
+    cTestRandom testRandom(Verbose);
 
     uint32_t CurrentTestIndex = 0;
 
@@ -163,15 +141,15 @@ int main()
             switch (prop.type)
             {
             case TestProp::Type::Plain:
-                result = testPlain.doTest(prop.value, ledsList);
+                result = testPlain.doTest(prop.value, dram, ledsList);
                 break;
 
             case TestProp::Type::Reversed:
-                result = testReversed.doTest(prop.value, ledsList);
+                result = testReversed.doTest(prop.value, dram, ledsList);
                 break;
 
             case TestProp::Type::Random:
-                result = testRandom.doTest(millis(), ledsList);
+                result = testRandom.doTest(millis(), dram, ledsList);
                 break;
             }
 
@@ -208,8 +186,7 @@ int main()
                 }
             }
 
-            // ledsList.update();
-            delay(10);
+            _delay_us(100);
         }
     }
 

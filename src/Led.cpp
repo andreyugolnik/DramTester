@@ -8,16 +8,30 @@
 
 #include "Led.h"
 
-cLed::cLed(uint32_t led, uint32_t timeout, bool initialState)
-    : m_led(led)
+cLed::cLed(Port port, uint8_t bit, uint32_t timeout, bool initialState)
+    : m_port(port)
+    , m_led(1 << bit)
     , m_timeout(timeout)
     , m_state(initialState)
 {
+    setup(timeout, initialState);
 }
 
 void cLed::setup(uint32_t timeout, bool initialState)
 {
-    pinMode(m_led, OUTPUT);
+    switch (m_port)
+    {
+    case Port::B:
+        DDRB |= ~m_led;
+        break;
+    case Port::C:
+        DDRC |= ~m_led;
+        break;
+    case Port::D:
+        DDRD |= ~m_led;
+        break;
+    }
+
     m_lastTime = millis();
     m_timeout = timeout;
     m_state = initialState;
@@ -26,7 +40,7 @@ void cLed::setup(uint32_t timeout, bool initialState)
 
 void cLed::setState(bool on)
 {
-    digitalWrite(m_led, on ? HIGH : LOW);
+    led(on);
     m_state = on;
     m_flushEnabled = false;
 }
@@ -47,7 +61,31 @@ void cLed::update()
             m_lastTime = currentTime;
 
             m_state = !m_state;
-            digitalWrite(m_led, m_state ? HIGH : LOW);
+            led(m_state);
         }
+    }
+}
+
+void cLed::led(bool on) const
+{
+    switch (m_port)
+    {
+    case Port::B:
+        on
+            ? PORTB |= m_led
+            : PORTB &= ~m_led;
+        break;
+
+    case Port::C:
+        on
+            ? PORTC |= m_led
+            : PORTC &= ~m_led;
+        break;
+
+    case Port::D:
+        on
+            ? PORTD |= m_led
+            : PORTD &= ~m_led;
+        break;
     }
 }

@@ -7,44 +7,43 @@
 \**********************************************/
 
 #include "TestReversed.h"
+#include "Dram.h"
 #include "LedsList.h"
 #include "PinsConfig.h"
 
-cTestReversed::cTestReversed(bool verbose, uint32_t addressBits)
-    : cTest(verbose, addressBits)
+cTestReversed::cTestReversed(bool verbose)
+    : cTest(verbose)
 {
 }
 
-cTest::Result cTestReversed::doTestImpl(uint32_t value, const cLedsList& leds, Error& error) const
+cTest::Result cTestReversed::doTestImpl(uint32_t value, const cDram& dram, const cLedsList& leds, Error& error) const
 {
     Serial.println("| Reversing bits starting with: " + String(value));
     Serial.flush();
 
-    for (uint32_t col = 0; col < (1 << m_addressBits); col++)
+    const uint16_t addressBits = dram.getAddressBits();
+    const uint16_t size = 1 << addressBits;
+
+    for (uint32_t col = 0; col < size; col++)
     {
-        const bool enabled = m_verbose && col % m_addressBits == 0;
+        const bool enabled = m_verbose && col % addressBits == 0;
 
-        for (uint32_t row = 0; row < (1 << m_addressBits); row++)
+        for (uint16_t row = 0; row < size; row++)
         {
-            const uint32_t val = (value + row) % 2;
+            const uint8_t val = (value + row) % 2;
 
-            digitalWrite(DIN, val);
-            writeToAddress(row, col);
-
-            // leds.update();
+            dram.writeToAddress(row, col, val);
         }
 
-        for (uint32_t row = 0; row < (1 << m_addressBits); row++)
+        for (uint16_t row = 0; row < size; row++)
         {
-            const uint32_t val = (value + row) % 2;
+            const uint8_t val = (value + row) % 2;
 
-            if (readFromAddress(row, col) != val)
+            if (dram.readFromAddress(row, col) != val)
             {
                 setError(row, col, val, error);
                 return Result::Error;
             }
-
-            // leds.update();
         }
 
         if (enabled)

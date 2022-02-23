@@ -9,8 +9,8 @@
 #pragma once
 
 #include <Arduino.h>
-#include "PinsConfig.h"
 
+class cDram;
 class cLedsList;
 
 class cTest
@@ -24,10 +24,10 @@ public:
         Error
     };
 
-    Result doTest(uint32_t value, const cLedsList& leds) const;
+    Result doTest(uint32_t value, const cDram& dram, const cLedsList& leds) const;
 
 protected:
-    cTest(bool verbose, uint32_t addressBits);
+    cTest(bool verbose);
 
 protected:
     struct Error
@@ -39,28 +39,9 @@ protected:
 
     void setError(uint32_t row, uint32_t col, uint32_t val, Error& error) const;
 
-    void writeToAddress(uint32_t row, uint32_t col) const;
-    uint32_t readFromAddress(uint32_t row, uint32_t col) const;
-
 private:
-    void setRAS(uint32_t row) const
-    {
-        PORTB = row & 0x3f;
-        PORTC = (PORTC & 0xf0) | ((row >> 6) & 0x0f);
-        digitalWrite(RAS, LOW);
-    }
-
-    void setCAS(uint32_t col) const
-    {
-        PORTB = col & 0x3f;
-        PORTC = (PORTC & 0xf0) | ((col >> 6) & 0x0f);
-        digitalWrite(CAS, LOW);
-    }
-
-private:
-    virtual Result doTestImpl(uint32_t value, const cLedsList& leds, Error& error) const = 0;
+    virtual Result doTestImpl(uint32_t value, const cDram& dram, const cLedsList& leds, Error& error) const = 0;
 
 protected:
     const bool m_verbose;
-    const uint32_t m_addressBits;
 };

@@ -7,44 +7,46 @@
 \**********************************************/
 
 #include "TestRandom.h"
+#include "Dram.h"
 #include "LedsList.h"
 #include "PinsConfig.h"
+#include "Random.h"
 
-cTestRandom::cTestRandom(bool verbose, uint32_t addressBits)
-    : cTest(verbose, addressBits)
+cTestRandom::cTestRandom(bool verbose)
+    : cTest(verbose)
 {
 }
 
-cTest::Result cTestRandom::doTestImpl(uint32_t seed, const cLedsList& leds, Error& error) const
+cTest::Result cTestRandom::doTestImpl(uint32_t seed, const cDram& dram, const cLedsList& leds, Error& error) const
 {
     Serial.println("| Random bit values with seed: 0x" + String(seed, HEX));
     Serial.flush();
 
-    for (uint32_t col = 0; col < (1 << m_addressBits); col++)
+    cRandom rnd;
+
+    const uint16_t addressBits = dram.getAddressBits();
+    const uint16_t size = 1 << addressBits;
+
+    for (uint16_t col = 0; col < size; col++)
     {
-        const bool enabled = m_verbose && col % m_addressBits == 0;
+        const bool enabled = m_verbose && col % addressBits == 0;
 
-        randomSeed(seed + col);
-        for (uint32_t row = 0; row < (1 << m_addressBits); row++)
+        rnd.setSeed(seed + col);
+        for (uint16_t row = 0; row < size; row++)
         {
-            const uint32_t val = random(0, 2);
-            digitalWrite(DIN, val);
-            writeToAddress(row, col);
-
-            // leds.update();
+            const uint8_t val = rnd.getUInt(0, 1);
+            dram.writeToAddress(row, col, val);
         }
 
-        randomSeed(seed + col);
-        for (uint32_t row = 0; row < (1 << m_addressBits); row++)
+        rnd.setSeed(seed + col);
+        for (uint16_t row = 0; row < size; row++)
         {
-            const uint32_t val = random(0, 2);
-            if (readFromAddress(row, col) != val)
+            const uint8_t val = rnd.getUInt(0, 1);
+            if (dram.readFromAddress(row, col) != val)
             {
                 setError(row, col, val, error);
                 return Result::Error;
             }
-
-            // leds.update();
         }
 
         if (enabled)

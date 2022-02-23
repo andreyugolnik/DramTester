@@ -9,21 +9,16 @@
 #include "LedsList.h"
 #include "IsrHandler.h"
 
-cLedsList::~cLedsList()
+cLedsList::cLedsList()
 {
-    clear();
-}
-
-void cLedsList::setup()
-{
-    m_green.setup(300, true);
-    m_red.setup(300, false);
-
-    clear();
-
     m_hadlerId = cIsrHandler::getInstance()->addHandler([](void* user) {
         static_cast<cLedsList*>(user)->update();
     }, this);
+}
+
+cLedsList::~cLedsList()
+{
+    clear();
 }
 
 void cLedsList::clear()
@@ -49,7 +44,8 @@ void cLedsList::switchOff()
 
 void cLedsList::showIdle()
 {
-    setup();
+    m_green.setup(300, true);
+    m_red.setup(300, false);
 }
 
 void cLedsList::showRed()

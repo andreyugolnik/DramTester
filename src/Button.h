@@ -15,8 +15,6 @@ class cButton final
 public:
     cButton(uint32_t btn);
 
-    void setup();
-
     bool update();
 
 private:
