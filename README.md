@@ -13,9 +13,6 @@ By default it supports 4164.
 ## Arduino Nano connections
 
 ### DRAM 4164 / 41256 pinout
-![DRAM 4164 / 41256 pinout](docs/dram_4164_41256.png)
-
-### DRAM 4164 / 41256 pinouts
                  -------------------
      (PB0)  5 --| A0  |       |     |
      (PB1)  7 --| A1  | 4164/ |     |
@@ -34,12 +31,12 @@ By default it supports 4164.
      (PD6)  3 --o WE  |       | GND |-- 16
                  -------------------
 
-### Other
-| Other        | Arduino Nano |
-|--------------|--------------|
-| LED Green    | (PC4)        |
-| LED Red      | (PC5)        |
-| Start Btn    | (PC5)        |
+### LED
+    (PC4)  LED Green
+    (PC5)  LED Red
+
+### Button
+    (PC5) Start Button
 
 ## How to use arduino-cli
 
